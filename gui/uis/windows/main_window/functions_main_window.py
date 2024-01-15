@@ -37,20 +37,20 @@ from . firebase_listener import *
 
 
 # FUNCTIONS
-class MainFunctions():
+class MainFunctions(QObject):
+    table_widget = None
     def __init__(self):
         super().__init__()
         # SETUP MAIN WINDOw
         # Load widgets from "gui\uis\main_window\ui_main.py"
         # ///////////////////////////////////////////////////////////////
-        self.ui = UI_MainWindow()
-        self.ui.setup_ui(self)
+        # self.ui = UI_MainWindow()
+        # self.ui.setup_ui(self)
+    
+    def set_table_widget(self, table_widget):
+        self.table_widget = table_widget
         
     
-    def read_text(self, text):
-        # Read the text from the QLineEdit and print it
-        # text = self.line_edit_name.text()
-        print(f'Text from QLineEdit: {text}')
         
     def browse_image(self, edit_line):
         # Open a file dialog to select an image
@@ -125,13 +125,17 @@ class MainFunctions():
             toast=False  # Set to True for Windows Toast Notifications (Windows 8 and 10)
         )
 
-    def refresh_table(self, table_widget):
+    # @Slot()
+    # def updateTableInMainThread(self):
+    #     MainFunctions.refresh_table(self, self.table_widget)
+        
+    def refresh_table(self):
         updated_data = []
         # Fetch updated data
         updated_data = MainFunctions.fetch_history_from_firebase(self, "")
 
         # Populate the table with updated data
-        MainFunctions.populate_table(self, updated_data, table_widget)
+        self.populate_table(updated_data, self.table_widget)
     
     def populate_table(self, new_data, table_widget):
         font = QFont()
@@ -159,7 +163,7 @@ class MainFunctions():
             table_widget.setItem(row_number, 1, item)
             item.setFont(font)
             file_path = MainFunctions.convert_gcs_to_firebase_url(self, str(user["url"]))
-            MainFunctions.download_image(self, file_path, row_number, 2, self.table_widget)
+            self.download_image(file_path, row_number, 2, self.table_widget)
             
             table_widget.verticalHeader().setSectionResizeMode(row_number, QHeaderView.Fixed)
             table_widget.verticalHeader().setDefaultSectionSize(200)

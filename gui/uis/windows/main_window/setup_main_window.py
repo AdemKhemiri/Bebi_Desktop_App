@@ -549,17 +549,23 @@ class SetupMainWindow:
         
         # self.history_list = []
         # Create a timer that triggers a function every 5 seconds
-        MainFunctions.refresh_table(self, self.table_widget)
+        # MainFunctions.refresh_table(self, self.table_widget)
         
         # timer_thread = TimerWorker()
         # timer_thread.timeout_signal.connect(lambda: MainFunctions.refresh_table(self, self.table_widget))
         # timer_thread.start()
         
-        self.firebase_listener = FirebaseListener()
+        self.main_function = MainFunctions()
+        self.main_function.set_table_widget(self.table_widget)
+        self.firebase_listener = FirebaseListener(self.main_function)
         self.firebase_listener.set_table_widget(self.table_widget)
+        self.firebase_listener.data_changed.connect(SetupMainWindow.refresh_table)
+
         self.firebase_listener_thread = QThread()
         self.firebase_listener.moveToThread(self.firebase_listener_thread)
         self.firebase_listener_thread.started.connect(self.firebase_listener.run)
+        
+        
         self.firebase_listener_thread.start()
         
         
@@ -571,38 +577,14 @@ class SetupMainWindow:
             
         #     item = QTableWidgetItem(user["name"])
         #     self.table_widget.setItem(row_number, 0, item)
-            
-        #     item.setFont(font)
-            
-        #     # self.table_widget.setItem(row_number, 0, QTableWidgetItem(str(user["name"]))) # Add name
-        #     # self.table_widget.setItem(row_number, 1, QTableWidgetItem(str(user["time"]))) # Add time
-            
-        #     item = QTableWidgetItem(user["time"])
-        #     self.table_widget.setItem(row_number, 1, item)
-        #     item.setFont(font)
-        #     file_path = MainFunctions.convert_gcs_to_firebase_url(self, str(user["url"]))
-        #     MainFunctions.download_image(self, file_path, row_number, 2, self.table_widget)
-        #     # self.table_widget.setRowHeight(row_number, 522)
-        #     # self.table_widget.resizeRowsToContents()
-        #     self.table_widget.verticalHeader().setSectionResizeMode(row_number, QHeaderView.Fixed)
-        #     self.table_widget.verticalHeader().setDefaultSectionSize(150)
-        
-        # MainFunctions.refresh_table(self, self.table_widget)
+ 
+ 
+ 
+ 
         self.table_widget.setFont(font)
         
         # ADD WIDGETS
-        # self.ui.load_pages.row_1_layout.addWidget(self.circular_progress_1)
-        # self.ui.load_pages.row_1_layout.addWidget(self.circular_progress_2)
-        # self.ui.load_pages.row_1_layout.addWidget(self.circular_progress_3)
-        # self.ui.load_pages.row_2_layout.addWidget(self.vertical_slider_1)
-        # self.ui.load_pages.row_2_layout.addWidget(self.vertical_slider_2)
-        # self.ui.load_pages.row_2_layout.addWidget(self.vertical_slider_3)
-        # self.ui.load_pages.row_2_layout.addWidget(self.vertical_slider_4)
-        # self.ui.load_pages.row_3_layout.addWidget(self.icon_button_1)
-        # self.ui.load_pages.row_3_layout.addWidget(self.icon_button_2)
-        # self.ui.load_pages.row_3_layout.addWidget(self.icon_button_3)
-        # self.ui.load_pages.row_3_layout.addWidget(self.push_button_1)
-        # self.ui.load_pages.row_3_layout.addWidget(self.toggle_button)
+        
         self.ui.load_pages.row_4_layout.addWidget(self.line_edit_name)
         self.ui.load_pages.row_4_layout.addWidget(self.line_edit_image)
         self.ui.load_pages.row_5_layout.addWidget(self.push_button_add_user, alignment=Qt.AlignRight)
@@ -655,7 +637,13 @@ class SetupMainWindow:
     # Resize or change position when window is resized
     # //////////////////    /////////////////////////////////////////////
         
+    @Slot(dict, MainFunctions)
+    def refresh_table(data, main_function):
+        # Update your table widget here
+        print("Data changed signal received")
+        main_function.refresh_table()
     
+
     def resize_grips(self):
         if self.settings["custom_title_bar"]:
             self.left_grip.setGeometry(5, 10, 10, self.height())
